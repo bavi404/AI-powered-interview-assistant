@@ -11,6 +11,10 @@ import {
 } from 'redux-persist'
 import localforage from 'localforage'
 import uiReducer from '@/store/slices/uiSlice'
+import appReducer from '@/store/slices/appSlice'
+import candidatesReducer from '@/store/slices/candidatesSlice'
+import interviewsReducer from '@/store/slices/interviewsSlice'
+import dashboardReducer from '@/store/slices/dashboardSlice'
 
 // Configure localforage to use IndexedDB with a custom store name
 localforage.config({
@@ -21,6 +25,10 @@ localforage.config({
 
 const rootReducer = combineReducers({
   ui: uiReducer,
+  app: appReducer,
+  candidates: candidatesReducer,
+  interviews: interviewsReducer,
+  dashboard: dashboardReducer,
 })
 
 export type RootState = ReturnType<typeof rootReducer>
