@@ -2,6 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ResumeDropzone } from '@/features/interviewee/components/ResumeDropzone'
+import { PreflightChat } from '@/features/interviewee/PreflightChat'
 
 export function IntervieweePage() {
   return (
@@ -11,6 +12,7 @@ export function IntervieweePage() {
         <p className="text-muted-foreground">Prepare and practice answers with guidance.</p>
       </div>
       <ResumeDropzone />
+      <PreflightChat />
       <Card>
         <CardHeader>
           <CardTitle>Practice Session</CardTitle>
