@@ -37,6 +37,19 @@ export const interviewsSlice = createSlice({
       interview.stage = 'running'
       interview.stepIndex = 0
     },
+    setStage(
+      state,
+      action: PayloadAction<{ candidateId: CandidateId; stage: InterviewState['stage'] }>
+    ) {
+      const { candidateId, stage } = action.payload
+      const interview = ensureInterview(state, candidateId)
+      interview.stage = stage
+    },
+    setStepIndex(state, action: PayloadAction<{ candidateId: CandidateId; stepIndex: number }>) {
+      const { candidateId, stepIndex } = action.payload
+      const interview = ensureInterview(state, candidateId)
+      interview.stepIndex = stepIndex
+    },
     pauseInterview(state, action: PayloadAction<{ candidateId: CandidateId }>) {
       const interview = ensureInterview(state, action.payload.candidateId)
       interview.stage = 'paused'
@@ -93,6 +106,33 @@ export const interviewsSlice = createSlice({
       if (interview.timer.questionId === answer.questionId) {
         interview.timer = { questionId: null, remaining: 0, paused: true }
       }
+      // advance step when an answer is submitted
+      interview.stepIndex = Math.min(interview.stepIndex + 1, 5)
+    },
+    updateAnswerScore(
+      state,
+      action: PayloadAction<{
+        candidateId: CandidateId
+        answerId: string
+        score?: number
+        feedback?: string
+      }>
+    ) {
+      const { candidateId, answerId, score, feedback } = action.payload
+      const interview = ensureInterview(state, candidateId)
+      const ans = interview.answers.find(a => a.id === answerId)
+      if (ans) {
+        if (typeof score === 'number') ans.score = score
+        if (typeof feedback === 'string') ans.feedback = feedback
+      }
+    },
+    setSummary(
+      state,
+      action: PayloadAction<{ candidateId: CandidateId; summary: InterviewSummary }>
+    ) {
+      const { candidateId, summary } = action.payload
+      const interview = ensureInterview(state, candidateId)
+      interview.summary = summary
     },
     tickTimer(state, action: PayloadAction<{ candidateId: CandidateId }>) {
       const interview = ensureInterview(state, action.payload.candidateId)
@@ -151,9 +191,13 @@ export const {
   resumeInterview,
   completeInterview,
   resetInterview,
+  setStage,
+  setStepIndex,
   pushChatMessage,
   addQuestion,
   submitAnswer,
+  updateAnswerScore,
+  setSummary,
   tickTimer,
   computeFinalScoreAndSummary,
 } = interviewsSlice.actions
