@@ -2,6 +2,7 @@ import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { RootLayout } from '@/ui/RootLayout'
 import { IntervieweePage } from '@/ui/pages/IntervieweePage'
 import { InterviewerPage } from '@/ui/pages/InterviewerPage'
+import { CandidateDetail } from '@/features/interviewer/CandidateDetail'
 
 export const router = createBrowserRouter([
   {
@@ -11,7 +12,7 @@ export const router = createBrowserRouter([
       { index: true, element: <Navigate to="/interviewee" replace /> },
       { path: '/interviewee', element: <IntervieweePage /> },
       { path: '/interviewer', element: <InterviewerPage /> },
-      { path: '/interviewer/:candidateId', element: <InterviewerPage /> },
+      { path: '/interviewer/:candidateId', element: <CandidateDetail /> },
     ],
   },
 ])

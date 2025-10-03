@@ -31,6 +31,9 @@ export const interviewsSlice = createSlice({
   name: 'interviews',
   initialState,
   reducers: {
+    removeInterview(state, action: PayloadAction<{ candidateId: CandidateId }>) {
+      delete state[action.payload.candidateId]
+    },
     startInterview(state, action: PayloadAction<{ candidateId: CandidateId }>) {
       const { candidateId } = action.payload
       const interview = ensureInterview(state, candidateId)
@@ -209,6 +212,7 @@ export const {
   setSummary,
   tickTimer,
   computeFinalScoreAndSummary,
+  removeInterview,
 } = interviewsSlice.actions
 
 export default interviewsSlice.reducer
