@@ -71,6 +71,7 @@ export interface InterviewState {
   summary?: InterviewSummary
   meta?: {
     alteredPath?: boolean
+    pausedAt?: string
   }
 }
 

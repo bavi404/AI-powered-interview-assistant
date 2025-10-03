@@ -54,11 +54,20 @@ export const interviewsSlice = createSlice({
       const interview = ensureInterview(state, action.payload.candidateId)
       interview.stage = 'paused'
       interview.timer.paused = true
+      interview.meta = {
+        ...(interview.meta || {}),
+        pausedAt: new Date().toISOString() as unknown as never,
+      }
     },
     resumeInterview(state, action: PayloadAction<{ candidateId: CandidateId }>) {
       const interview = ensureInterview(state, action.payload.candidateId)
       interview.stage = 'running'
       interview.timer.paused = false
+      if (interview.meta) {
+        const meta = interview.meta as { pausedAt?: string }
+        delete meta.pausedAt
+        interview.meta = meta
+      }
     },
     completeInterview(state, action: PayloadAction<{ candidateId: CandidateId }>) {
       const interview = ensureInterview(state, action.payload.candidateId)

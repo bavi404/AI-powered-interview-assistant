@@ -5,6 +5,7 @@ import { setThemeMode, ThemeMode } from '@/store/slices/uiSlice'
 import { Toaster } from '@/components/ui/toaster'
 import { Bot, User } from 'lucide-react'
 import { ThemeToggle } from '@/ui/components/ThemeToggle'
+import { WelcomeBackModal } from '@/features/interviewee/WelcomeBackModal'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 export function RootLayout() {
@@ -60,6 +61,7 @@ export function RootLayout() {
         </section>
       </main>
       <Toaster />
+      <WelcomeBackModal />
     </div>
   )
 }

@@ -11,6 +11,7 @@ import {
   maybeSummarize,
   getDifficultyByStep,
 } from '@/features/interview/engine'
+import { pauseInterview, resumeInterview } from '@/store/slices/interviewsSlice'
 import { store } from '@/store'
 
 export function InterviewRun({ candidateId }: { candidateId: string }) {
@@ -67,9 +68,23 @@ export function InterviewRun({ candidateId }: { candidateId: string }) {
           <span>Question {step + 1}</span>
           <Badge>{question?.difficulty ?? getDifficultyByStep(step).difficulty}</Badge>
         </CardTitle>
-        <CardDescription>
-          <span>Time: {timer?.remaining ?? getDifficultyByStep(step).seconds}s</span> •{' '}
-          <span>Progress {progress}</span>
+        <CardDescription className="flex items-center justify-between gap-2">
+          <span>
+            Time: {timer?.remaining ?? getDifficultyByStep(step).seconds}s • Progress {progress}
+          </span>
+          {interview.stage === 'running' ? (
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => dispatch(pauseInterview({ candidateId }))}
+            >
+              Pause
+            </Button>
+          ) : (
+            <Button size="sm" onClick={() => dispatch(resumeInterview({ candidateId }))}>
+              Resume
+            </Button>
+          )}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
