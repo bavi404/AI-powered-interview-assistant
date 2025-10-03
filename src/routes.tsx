@@ -11,6 +11,7 @@ export const router = createBrowserRouter([
       { index: true, element: <Navigate to="/interviewee" replace /> },
       { path: '/interviewee', element: <IntervieweePage /> },
       { path: '/interviewer', element: <InterviewerPage /> },
+      { path: '/interviewer/:candidateId', element: <InterviewerPage /> },
     ],
   },
 ])
