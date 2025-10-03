@@ -56,6 +56,8 @@ export interface InterviewSummary {
   strengths: string[]
   improvements: string[]
   overview: string
+  badges?: string[]
+  alteredPath?: boolean
 }
 
 export interface InterviewState {
@@ -67,6 +69,9 @@ export interface InterviewState {
   questions: Question[]
   answers: Answer[]
   summary?: InterviewSummary
+  meta?: {
+    alteredPath?: boolean
+  }
 }
 
 export interface DashboardState {

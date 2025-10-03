@@ -17,6 +17,7 @@ import {
   buildSummaryPrompt,
   SummaryOutSchema,
 } from '@/services/llm/prompts'
+import { pushChatMessage } from '@/store/slices/interviewsSlice'
 
 export function getDifficultyByStep(stepIndex: number): {
   difficulty: Difficulty
@@ -36,7 +37,7 @@ export async function nextQuestion(
   const interview = state.interviews[candidateId]
   if (!interview) return
   const step = interview.stepIndex
-  const { difficulty, seconds } = getDifficultyByStep(step)
+  const { difficulty, seconds } = computeAdaptiveNextDifficulty(candidateId, getState)
   const profile = state.candidates.byId[candidateId]
   const previousQA = interview.questions
     .slice(0, step)
@@ -76,6 +77,18 @@ export async function scoreAnswer(
   dispatch(
     updateAnswerScore({ candidateId, answerId, score: score.score, feedback: score.feedback })
   )
+  // Feedback bubble
+  dispatch(
+    pushChatMessage({
+      candidateId,
+      message: {
+        id: crypto.randomUUID(),
+        role: 'assistant',
+        content: score.feedback,
+        timestamp: new Date().toISOString(),
+      },
+    })
+  )
 }
 
 export async function maybeSummarize(
@@ -96,6 +109,24 @@ export async function maybeSummarize(
   const { system, user } = buildSummaryPrompt(qa, profile)
   const raw = await llm.complete(system, user)
   const sum = safeParseJSON(raw, SummaryOutSchema)
+  // Compute badges
+  const scores = interview.answers.map(a => a.score ?? 0)
+  const avg = scores.reduce((s, v) => s + v, 0) / (scores.length || 1)
+  const mean = avg
+  const variance = scores.reduce((s, v) => s + Math.pow(v - mean, 2), 0) / (scores.length || 1)
+  const stddev = Math.sqrt(variance)
+  const badges: string[] = []
+  // Quick Thinker: elapsed <5s and score>=8
+  const quick = interview.answers.some(a => (a.elapsedSeconds || 9999) < 5 && (a.score ?? 0) >= 8)
+  if (quick) badges.push('Quick Thinker')
+  // Consistent Performer: stddev <1.5 and avg>=7.5
+  if (stddev < 1.5 && avg >= 7.5) badges.push('Consistent Performer')
+  // Hard Question Hero: any hard = 10
+  const hardHero = interview.answers.some(
+    (a, i) => interview.questions[i]?.difficulty === 'hard' && (a.score ?? 0) === 10
+  )
+  if (hardHero) badges.push('Hard Question Hero')
+
   dispatch(
     setSummary({
       candidateId,
@@ -105,8 +136,26 @@ export async function maybeSummarize(
         strengths: sum.strengths,
         improvements: sum.improvements,
         overview: sum.summary,
+        badges,
+        alteredPath: interview.meta?.alteredPath ?? false,
       },
     })
   )
   dispatch(setStage({ candidateId, stage: 'completed' }))
+}
+
+export function computeAdaptiveNextDifficulty(candidateId: string, getState: () => RootState) {
+  const state = getState()
+  const interview = state.interviews[candidateId]
+  const step = interview?.stepIndex ?? 0
+  if (step < 2) return getDifficultyByStep(step)
+  // After easy questions (0,1) scored 9+, skip one medium and add extra hard later
+  const firstTwo = interview?.answers.slice(0, 2) ?? []
+  const bothHigh = firstTwo.length === 2 && firstTwo.every(a => (a.score ?? 0) >= 9)
+  if (bothHigh) {
+    // mark altered path
+    interview!.meta = { ...(interview!.meta || {}), alteredPath: true }
+    if (step === 2) return { difficulty: 'hard' as Difficulty, seconds: 120 }
+  }
+  return getDifficultyByStep(step)
 }
